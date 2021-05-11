@@ -1,0 +1,235 @@
+---
+title: "EDA of Human Cardiac Tissue-specific Proteome (Feb 23 2021) CaseOLAP Scores"
+author: "Ashlyn Jew"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load libaries
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+```
+
+## Load Data
+
+```{r}
+# Human cardiac tissue-specific proteome - Feb 23 2021
+human <- read_csv("https://raw.githubusercontent.com/asjew/heart_caseolap_EDA/main/Data/Human%20cardiac%20tissue-specific%20proteome%20-%20Feb%2023%202021/results/caseolap.csv")
+head(human)
+dim(human)
+```
+
+# Exploratory Data Analysis
+
+## Histogram for each group
+```{r}
+ggplot(human, aes(x = IHD)) + geom_histogram(fill = "lightblue", bins = 50) + ggtitle("Distribution of CaseOLAP Scores for IHD Disease Group (Human)")
+ggplot(human, aes(x = CM)) + geom_histogram(fill = "lightblue", bins = 50)
+ggplot(human, aes(x = ARR)) + geom_histogram(fill = "lightblue", bins = 50)
+ggplot(human, aes(x = VD)) + geom_histogram(fill = "lightblue", bins = 50)
+ggplot(human, aes(x = CHD)) + geom_histogram(fill = "lightblue", bins = 50)
+ggplot(human, aes(x = CCD)) + geom_histogram(fill = "lightblue", bins = 50)
+ggplot(human, aes(x = VOO)) + geom_histogram(fill = "lightblue", bins = 50)
+ggplot(human, aes(x = OTH)) + geom_histogram(fill = "lightblue", bins = 50)
+```
+
+## Ranges of CaseOLAP scores by group
+```{r}
+human_min <- sapply(human[2:9], min)
+human_max <- sapply(human[2:9], max)
+human_ranges <- data.frame(id=c("IHD", "CM", "ARR","VD", "CHD", "CCD", "VOO", "OTH"),
+                           min=human_min, max=human_max)
+
+ggplot(human_ranges, aes(x=id))+
+  geom_linerange(aes(ymin=min,ymax=max),linetype=2,color="blue")+
+  geom_point(aes(y=min),size=3,color="red")+
+  geom_point(aes(y=max),size=3,color="red")+
+  theme_bw() + ggtitle("Ranges of CaseOLAP Scores by Disease Group (Human)") +
+  xlab("Disease Group") + ylab("CaseOLAP Score")
+```
+
+## Number of zeroes in each group
+```{r}
+human_num_zero <- sapply(human[2:9], function(x) sum(x == 0))
+human_zero <- data.frame(id=c("IHD", "CM", "ARR","VD", "CHD", "CCD", "VOO", "OTH"),
+                         num_zero = human_num_zero)
+
+ggplot(data = human_zero, aes(x=id, y=num_zero)) + geom_bar(stat="identity") +
+  ggtitle("Number of CaseOLAP Score 0 for each Disease Group") + 
+  xlab("Number of 0's") +ylab("Disease Group")
+```
+
+# Top 20 Analysis
+
+```{r}
+# Summary Statistics
+summary(human[2:9])
+
+# Get top 20 proteins for each group
+human_IHD <- human %>% arrange(desc(IHD))
+t20_humanIHD <- human_IHD[1:20, ]$protein
+
+human_CM <- human %>% arrange(desc(CM))
+t20_humanCM <- human_CM[1:20, ]$protein
+
+human_ARR <- human %>% arrange(desc(ARR))
+t20_humanARR <- human_ARR[1:20, ]$protein
+
+human_VD <- human %>% arrange(desc(VD))
+t20_humanVD <- human_VD[1:20, ]$protein
+
+human_CHD <- human %>% arrange(desc(CHD))
+t20_humanCHD <- human_CHD[1:20, ]$protein
+
+human_CCD <- human %>% arrange(desc(CCD))
+t20_humanCCD <- human_CCD[1:20, ]$protein
+
+human_VOO <- human %>% arrange(desc(VOO))
+t20_humanVOO <- human_VOO[1:20, ]$protein
+
+human_OTH <- human %>% arrange(desc(OTH))
+t20_humanOTH <- human_OTH[1:20, ]$protein
+
+# Find the proteins that appear in more than one top 20 list
+Reduce(intersect, list(t20_humanIHD, t20_humanCM, t20_humanARR,
+                       t20_humanVD, t20_humanCHD, t20_humanCCD, t20_humanVOO, t20_humanOTH))
+
+# Combine top 20 lists into a dataframe
+t20_human <- data.frame(t20_humanIHD, t20_humanCM, t20_humanARR,
+                        t20_humanVD, t20_humanCHD, t20_humanCCD, t20_humanVOO, t20_humanOTH)
+
+# Count the number of times each protein appears in the dataframe
+sort(table(c(t20_humanIHD, t20_humanCM, t20_humanARR, t20_humanVD,
+             t20_humanCHD, t20_humanCCD, t20_humanVOO, t20_humanOTH)))
+```
+
+
+```{r}
+# Proteins that appeared only once
+t20_once <- names(which(sort(table(c(t20_humanIHD, t20_humanCM, t20_humanARR,
+                                     t20_humanVD, t20_humanCHD, t20_humanCCD,
+                                     t20_humanVOO, t20_humanOTH))) == 1))
+
+# Create dataframe with caseolap scores of proteins that appeared only once
+t20_once_caseolap <- data.frame(matrix(0, nrow = 32, ncol = 9))
+unlist(human[which(human$protein == t20_once[1]), 2:9])
+for(i in 1:32)
+{
+  t20_once_caseolap[i, ] <- c(t20_once[i],
+                              unlist(human[which(human$protein == t20_once[i]), 2:9]))
+}
+colnames(t20_once_caseolap) <- c("protein", "IHD", "CM", "ARR","VD", "CHD", "CCD", "VOO", "OTH")
+
+# Columns with the highest caseolap score
+colnames(t20_once_caseolap[2:9])[apply(t20_once_caseolap[2:9],1,which.max)]
+
+# IHD
+t20_once_caseolap[which(colnames(t20_once_caseolap[2:9])[apply(t20_once_caseolap[2:9],
+                                                               1,which.max)] == "IHD"), 1]
+
+#CM
+t20_once_caseolap[which(colnames(t20_once_caseolap[2:9])[apply(t20_once_caseolap[2:9],
+                                                               1,which.max)] == "CM"), 1]
+
+#ARR
+t20_once_caseolap[which(colnames(t20_once_caseolap[2:9])[apply(t20_once_caseolap[2:9],
+                                                               1,which.max)] == "ARR"), 1]
+# NONE
+
+#VD
+t20_once_caseolap[which(colnames(t20_once_caseolap[2:9])[apply(t20_once_caseolap[2:9],
+                                                               1,which.max)] == "VD"), 1]
+```
+
+
+
+# PMIDs
+
+```{r}
+# Number of pmid collected in dataset
+IHD_pmid <- 156402
+CM_pmid <- 72527
+ARR_pmid <- 60535
+VD_pmid <- 34242
+CHD_pmid <- 42621
+CCD_pmid <- 24119
+VOO_pmid <- 10850
+OTH_pmid <- 62708
+
+# Myocardial Ischemia[MeSH Terms]
+IHD_results <- 438259
+# (Heart Failure[MeSH Terms]) OR (Cardiomyopathies[MeSH Terms])
+CM_results <- 214025
+# Arrhythmias, Cardiac[MeSH Terms]
+ARR_results <- 214459
+# Heart Valve Diseases[MeSH Terms]
+VD_results <- 122701
+# Heart Defects, Congenital[MeSH Terms]
+CHD_results <- 155415
+# Cardiac Conduction System Disease[MeSH Terms]
+CCD_results <- 93934
+# Ventricular Outflow Obstruction[MeSH Terms]
+VOO_results <- 36612
+# (((((Cardiomegaly[MeSH Terms]) OR (Endocarditis[MeSH Terms])) OR
+# (Heart Arrest[MeSH Terms])) OR (Heart Rupture[MeSH Terms])) OR
+# (Ventricular Dysfunction[MeSH Terms])) OR (Pericarditis[MeSH Terms])
+OTH_results <- 180768
+
+
+group_results <- c(rep("IHD", IHD_results), rep("CM", CM_results),
+                   rep("ARR", ARR_results), rep("VD" , VD_results),
+                   rep("CHD", CHD_results), rep("CCD", CCD_results),
+                   rep("VOO" , VOO_results), rep("OTH" , OTH_results))
+group_pmid <- c(rep(1, IHD_pmid), rep(0, IHD_results - IHD_pmid),
+                rep(1, CM_pmid), rep(0, CM_results - CM_pmid),
+                rep(1, ARR_pmid), rep(0, ARR_results - ARR_pmid),
+                rep(1, VD_pmid), rep(0, VD_results - VD_pmid),
+                rep(1, CHD_pmid), rep(0, CHD_results - CHD_pmid),
+                rep(1, CCD_pmid), rep(0, CCD_results - CCD_pmid),
+                rep(1, VOO_pmid), rep(0, VOO_results - VOO_pmid),
+                rep(1, OTH_pmid), rep(0, OTH_results - OTH_pmid))
+group_counts <- table(group_pmid, group_results)
+
+ggplot(as.data.frame(group_counts), aes(group_results, Freq, fill=group_pmid)) + 
+  geom_bar(stat="identity") + scale_fill_discrete(name = "", labels = c("PubMed Search Results", "PMIDs Collected"))
+```
+
+```{r}
+# Violin plot for each group
+caseolap_IHD <- cbind.data.frame("caseolap" = as.numeric(human$IHD),
+                                 "group" = rep("IHD", length(human$IHD)))
+caseolap_CM <- cbind.data.frame("caseolap" = as.numeric(human$CM),
+                                "group" = rep("CM", length(human$CM)))
+caseolap_ARR <- cbind.data.frame("caseolap" = as.numeric(human$ARR),
+                                 "group" = rep("ARR", length(human$ARR)))
+caseolap_VD <- cbind.data.frame("caseolap" = as.numeric(human$VD),
+                                "group" = rep("VD", length(human$VD)))
+caseolap_CHD <- cbind.data.frame("caseolap" = as.numeric(human$CHD),
+                                 "group" = rep("CHD", length(human$CHD)))
+caseolap_CCD <- cbind.data.frame("caseolap" = as.numeric(human$CCD),
+                                 "group" = rep("CCD", length(human$CCD)))
+caseolap_VOO <- cbind.data.frame("caseolap" = as.numeric(human$VOO),
+                                 "group" = rep("VOO", length(human$VOO)))
+caseolap_OTH <- cbind.data.frame("caseolap" = as.numeric(human$OTH),
+                                 "group" = rep("OTH", length(human$OTH)))
+
+caseolap <- rbind(caseolap_IHD, caseolap_CM, caseolap_ARR, caseolap_VD,
+                  caseolap_CHD, caseolap_CCD, caseolap_VOO, caseolap_OTH)
+ggplot(caseolap, aes(x=group, y=caseolap)) + 
+  geom_violin()
+ggplot(caseolap, aes(x=group, y=caseolap)) + 
+  geom_violin() + scale_y_continuous(limits = c(0, 0.05))
+```
+
+```{r}
+# Boxplot for each group
+caseolap <- rbind(caseolap_IHD, caseolap_CM, caseolap_ARR, caseolap_VD,
+                  caseolap_CHD, caseolap_CCD, caseolap_VOO, caseolap_OTH)
+ggplot(caseolap, aes(x=group, y=caseolap)) + geom_boxplot() +
+    stat_summary(fun.y=mean, geom="point", shape=20, color="red", fill="red")
+```

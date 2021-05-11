@@ -1,3 +1,0 @@
-This run included 2540 proteins from the heart tissue-associated proteome for Homo sapiens as per UniProtKB.
-PMC full texts are included.
-Here, the categories file has been updated to ensure correct parsing and the Other category does not contain "heart failure".

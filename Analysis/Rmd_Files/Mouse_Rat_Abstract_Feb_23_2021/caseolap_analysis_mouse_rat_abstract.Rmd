@@ -1,0 +1,105 @@
+---
+title: "EDA of Mouse & Rat Cardiac Tissue-specific Proteome (Feb 23 2021) CaseOLAP Scores"
+author: "Ashlyn Jew"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load libaries
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+```
+
+## Load Data
+
+```{r}
+# Mouse+rat cardiac tissue-specific proteome - Feb 23 2021
+mouserat <- read_csv("https://raw.githubusercontent.com/asjew/heart_caseolap_EDA/main/Data/Mouse%2Brat%20cardiac%20tissue-specific%20proteome%20-%20Feb%2023%202021/results/caseolap.csv")
+head(mouserat)
+```
+
+# Exploratory Data Analysis
+
+## Histogram for each group
+```{r}
+ggplot(mouserat, aes(x = IHD)) + geom_histogram(fill = "lightblue", bins = 50)
+ggplot(mouserat, aes(x = CM)) + geom_histogram(fill = "lightblue", bins = 50)
+ggplot(mouserat, aes(x = ARR)) + geom_histogram(fill = "lightblue", bins = 50)
+ggplot(mouserat, aes(x = VD)) + geom_histogram(fill = "lightblue", bins = 50)
+ggplot(mouserat, aes(x = CHD)) + geom_histogram(fill = "lightblue", bins = 50)
+ggplot(mouserat, aes(x = CCD)) + geom_histogram(fill = "lightblue", bins = 50)
+ggplot(mouserat, aes(x = VOO)) + geom_histogram(fill = "lightblue", bins = 50)
+ggplot(mouserat, aes(x = OTH)) + geom_histogram(fill = "lightblue", bins = 50)
+```
+
+## Ranges of CaseOLAP scores by group
+```{r}
+mouserat_min <- sapply(mouserat[2:9], min)
+mouserat_max <- sapply(mouserat[2:9], max)
+mouserat_ranges <- data.frame(id=c("IHD", "CM", "ARR","VD", "CHD", "CCD", "VOO", "OTH"),
+                              min=mouserat_min, max=mouserat_max)
+
+ggplot(mouserat_ranges, aes(x=id))+
+  geom_linerange(aes(ymin=min,ymax=max),linetype=2,color="blue")+
+  geom_point(aes(y=min),size=3,color="red")+
+  geom_point(aes(y=max),size=3,color="red")+
+  theme_bw()
+```
+
+## Number of zeroes in each group
+```{r}
+mouserat_num_zero <- sapply(mouserat[2:9], function(x) sum(x == 0))
+mouserat_zero <- data.frame(id=c("IHD", "CM", "ARR","VD", "CHD", "CCD", "VOO", "OTH"),
+                            num_zero = mouserat_num_zero)
+
+ggplot(data = mouserat_zero, aes(x=id, y=num_zero)) + geom_bar(stat="identity")
+```
+
+# Top 20 Analysis
+
+```{r}
+# Summary Statistics
+summary(mouserat[2:9])
+
+# Get top 20 proteins for each group
+mouserat_IHD <- mouserat %>% arrange(desc(IHD))
+t20_mouseratIHD <- mouserat_IHD[1:20, ]$protein
+
+mouserat_CM <- mouserat %>% arrange(desc(CM))
+t20_mouseratCM <- mouserat_CM[1:20, ]$protein
+
+mouserat_ARR <- mouserat %>% arrange(desc(ARR))
+t20_mouseratARR <- mouserat_ARR[1:20, ]$protein
+
+mouserat_VD <- mouserat %>% arrange(desc(VD))
+t20_mouseratVD <- mouserat_VD[1:20, ]$protein
+
+mouserat_CHD <- mouserat %>% arrange(desc(CHD))
+t20_mouseratCHD <- mouserat_CHD[1:20, ]$protein
+
+mouserat_CCD <- mouserat %>% arrange(desc(CCD))
+t20_mouseratCCD <- mouserat_CCD[1:20, ]$protein
+
+mouserat_VOO <- mouserat %>% arrange(desc(VOO))
+t20_mouseratVOO <- mouserat_VOO[1:20, ]$protein
+
+mouserat_OTH <- mouserat %>% arrange(desc(OTH))
+t20_mouseratOTH <- mouserat_OTH[1:20, ]$protein
+
+# Find the proteins that appear in more than one top 20 list
+Reduce(intersect, list(t20_mouseratIHD, t20_mouseratCM, t20_mouseratARR, t20_mouseratVD,
+                       t20_mouseratCHD, t20_mouseratCCD, t20_mouseratVOO, t20_mouseratOTH))
+
+# Combine top 20 lists into a dataframe
+t20_mouserat <- data.frame(t20_mouseratIHD, t20_mouseratCM, t20_mouseratARR, t20_mouseratVD,
+                           t20_mouseratCHD, t20_mouseratCCD, t20_mouseratVOO, t20_mouseratOTH)
+
+# Count the number of times each protein appears in the dataframe
+sort(table(c(t20_mouseratIHD, t20_mouseratCM, t20_mouseratARR, t20_mouseratVD,
+             t20_mouseratCHD, t20_mouseratCCD, t20_mouseratVOO, t20_mouseratOTH)))
+```
