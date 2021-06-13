@@ -224,3 +224,202 @@ human_standard[which(human_standard$IHD < human_standard$OTH &
 ```
 
 ![UniProt entries for OTH](OTH_zscore.PNG)
+
+# UpSet Plots
+
+```{r}
+library(UpSetR)
+
+# http://gehlenborglab.org/research/projects/upsetr/
+
+# Create dataframe with 8 columns corresponding to the 8 CVD groups
+# 1 if protein is above threshold, 0 if not
+
+# Threshold 0
+human_binary <- ifelse(human_full[ , 2:9] > 0, 1, 0)
+human_binary <- data.frame("protein" = human_full$protein, human_binary)
+
+# Threshold 0.01
+human_binary_01 <- ifelse(human_full[ , 2:9] > 0.01, 1, 0)
+human_binary_01 <- data.frame("protein" = human_full$protein, human_binary_01)
+
+# Threshold 0.02
+human_binary_02 <- ifelse(human_full[ , 2:9] > 0.02, 1, 0)
+human_binary_02 <- data.frame("protein" = human_full$protein, human_binary_02)
+
+# Threshold 0.03
+human_binary_03 <- ifelse(human_full[ , 2:9] > 0.03, 1, 0)
+human_binary_03 <- data.frame("protein" = human_full$protein, human_binary_03)
+
+# Threshold 0.05
+human_binary_05 <- ifelse(human_full[ , 2:9] > 0.05, 1, 0)
+human_binary_05 <- data.frame("protein" = human_full$protein, human_binary_05)
+```
+
+## UpSet Plot with 50 Intersections
+
+```{r}
+upset(human_binary,
+      sets = c("IHD", "CM", "ARR", "VD", "CHD", "CCD", "VOO", "OTH"),
+      sets.bar.color = "#56B4E9",
+      number.angles = 5, 
+      # c(intersection size title, intersection size tick labels, set size title, set size tick labels, set names, numbers above bars)
+      text.scale = c(1, 1, 1, 1, 1, 1.1),
+      set_size.show = TRUE,
+      empty.intersections = "on",
+      nintersects = 50)
+```
+
+## Single Disease Groups (No intersections)
+
+```{r}
+upset(human_binary,
+      sets = c("IHD", "CM", "ARR", "VD", "CHD", "CCD", "VOO", "OTH"),
+      sets.bar.color = "#56B4E9",
+      number.angles = 5, 
+      # c(intersection size title, intersection size tick labels, set size title, set size tick labels, set names, numbers above bars)
+      text.scale = c(1, 1, 1, 1, 1, 1.1),
+      set_size.show = TRUE,
+      empty.intersections = "on",
+      nintersects = 8)
+```
+
+## Threshold of 0 UpSet Plot
+
+```{r}
+upset(human_binary,
+      sets = c("IHD", "CM", "ARR", "VD", "CHD", "CCD", "VOO", "OTH"),
+      sets.bar.color = "#56B4E9",
+      number.angles = 5, 
+      # c(intersection size title, intersection size tick labels, set size title, set size tick labels, set names, numbers above bars)
+      text.scale = c(1.3, 1.2, 1.1, 1.1, 1.25, 1.1),
+      order.by = "freq",
+      show.numbers = FALSE,
+      mb.ratio = c(0.72, 0.28),
+      empty.intersections = "on",
+      mainbar.y.label = "Number of Proteins Appearing \n in Disease Group Intersection",
+      sets.x.label = "Disease Group Set Size")
+```
+
+## Threshold of 0.01 UpSet Plot
+
+```{r}
+upset(human_binary_01,
+      sets = c("IHD", "CM", "ARR", "VD", "CHD", "CCD", "VOO", "OTH"),
+      sets.bar.color = "#56B4E9",
+      number.angles = 5, 
+      # c(intersection size title, intersection size tick labels, set size title, set size tick labels, set names, numbers above bars)
+      text.scale = c(1.3, 1.2, 1.1, 1.1, 1.25, 1.1),
+      order.by = "freq",
+      show.numbers = FALSE,
+      mb.ratio = c(0.72, 0.28),
+      empty.intersections = "on",
+      mainbar.y.label = "Number of Proteins Appearing \n in Disease Group Intersection",
+      sets.x.label = "Disease Group Set Size")
+```
+
+## Threshold of 0.02 UpSet Plot
+
+```{r}
+upset(human_binary_02,
+      sets = c("IHD", "CM", "ARR", "VD", "CHD", "CCD", "VOO", "OTH"),
+      sets.bar.color = "#56B4E9",
+      number.angles = 5, 
+      # c(intersection size title, intersection size tick labels, set size title, set size tick labels, set names, numbers above bars)
+      text.scale = c(1.3, 1.2, 1.1, 1.1, 1.25, 1.1),
+      order.by = "freq",
+      show.numbers = FALSE,
+      mb.ratio = c(0.72, 0.28),
+      empty.intersections = "on",
+      mainbar.y.label = "Number of Proteins Appearing \n in Disease Group Intersection",
+      sets.x.label = "Disease Group Set Size")
+```
+
+## Threshold of 0.03 UpSet Plot
+
+```{r}
+upset(human_binary_03,
+      sets = c("IHD", "CM", "ARR", "VD", "CHD", "CCD", "VOO", "OTH"),
+      sets.bar.color = "#56B4E9",
+      number.angles = 5, 
+      # c(intersection size title, intersection size tick labels, set size title, set size tick labels, set names, numbers above bars)
+      text.scale = c(1.3, 1.2, 1.1, 1.1, 1.25, 1.1),
+      order.by = "freq",
+      show.numbers = FALSE,
+      mb.ratio = c(0.72, 0.28),
+      empty.intersections = "on",
+      mainbar.y.label = "Number of Proteins Appearing \n in Disease Group Intersection",
+      sets.x.label = "Disease Group Set Size")
+```
+
+## Threshold of 0.05 UpSet Plot
+
+```{r}
+upset(human_binary_05,
+      sets = c("IHD", "CM", "ARR", "VD", "CHD", "CCD", "VOO", "OTH"),
+      sets.bar.color = "#56B4E9",
+      number.angles = 5, 
+      # c(intersection size title, intersection size tick labels, set size title, set size tick labels, set names, numbers above bars)
+      text.scale = c(1.3, 1.2, 1.1, 1.1, 1.25, 1.1),
+      order.by = "freq",
+      show.numbers = FALSE,
+      mb.ratio = c(0.72, 0.28),
+      empty.intersections = "on",
+      mainbar.y.label = "Number of Proteins Appearing \n in Disease Group Intersection",
+      sets.x.label = "Disease Group Set Size")
+```
+
+```{r}
+# library(devtools)
+# install_github("jokergoo/ComplexHeatmap")
+# Refer to https://jokergoo.github.io/ComplexHeatmap-reference/book/upset-plot.html#example-with-the-movies-dataset
+
+# For Threshold 0 dataframe
+# Make binary matrix
+human_binary_mat <- ComplexHeatmap::make_comb_mat(human_binary)
+# Get size for each intersection
+human_binary_comb_size <- sort(ComplexHeatmap::comb_size(human_binary_mat), decreasing = TRUE)
+# Get size for each category set
+human_binary_set_size <- ComplexHeatmap::set_size(human_binary_mat)
+
+# For Threshold 0.03 dataframe
+# Make binary matrix
+human_binary_mat_03 <- ComplexHeatmap::make_comb_mat(human_binary_03)
+# Get size for each intersection
+human_binary_comb_size_03 <- sort(ComplexHeatmap::comb_size(human_binary_mat_03), decreasing = TRUE)
+# Get size for each category set
+human_binary_set_size_03 <- ComplexHeatmap::set_size(human_binary_mat_03)
+
+# Get intersections with intersection size > 200 in the Threshold 0 dataframe
+human_binary_names_subset <- names(human_binary_comb_size[human_binary_comb_size > 200])
+# Find the size of those intersections in the Threshold 0.03 dataframe
+human_binary_comb_size_03[human_binary_names_subset]
+```
+
+## Stacked Barplot comparing threshold 0 and threshold 0.03
+
+```{r}
+human_binary_subset <- data.frame(human_binary_names_subset,
+                                  "count" = human_binary_comb_size[human_binary_names_subset],
+                                  "threshold" = rep(0, 45))
+human_binary_subset_03 <- data.frame(human_binary_names_subset,
+                                     "count" = human_binary_comb_size_03[human_binary_names_subset],
+                                     "threshold" = rep(0.03, 45))
+human_binary_subset_double <- rbind(human_binary_subset, human_binary_subset_03)
+
+ggplot(human_binary_subset_double, aes(fill=factor(threshold),
+                                       y=count, x=reorder(human_binary_names_subset, -count))) + 
+    geom_bar(position="stack", stat="identity") + theme(axis.text.x = element_text(angle = 90))
+```
+
+```{r}
+# Exploring the ComplexHeatmap UpSet() function
+human_binary_mat_subset <- human_binary_mat[ComplexHeatmap::comb_size(human_binary_mat) >= 100]
+
+ComplexHeatmap::UpSet(human_binary_mat_subset,
+                      set_order = order(ComplexHeatmap::set_size(human_binary_mat_subset),
+                                        decreasing = TRUE),
+                      comb_order = order(ComplexHeatmap::comb_size(human_binary_mat_subset),
+                                         decreasing = TRUE),
+                      pt_size = unit(2, "mm"))
+```
