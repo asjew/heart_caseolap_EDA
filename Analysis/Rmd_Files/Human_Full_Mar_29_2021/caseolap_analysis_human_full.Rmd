@@ -423,3 +423,45 @@ ComplexHeatmap::UpSet(human_binary_mat_subset,
                                          decreasing = TRUE),
                       pt_size = unit(2, "mm"))
 ```
+
+## Stacked UpSet Plot comparing threshold 0 and threshold 0.03
+
+```{r}
+# Setting up dataframe
+human_binary_TF <- human_binary
+human_binary_TF[2:9] <- human_binary[2:9] == 1
+human_binary_TF["Threshold"] <- '0'
+
+human_binary_03_TF <- human_binary_03
+human_binary_03_TF[2:9] <- human_binary_03[2:9] == 1
+human_binary_03_TF["Threshold"] <- '0.03'
+
+human_binary_double_TF <- rbind(human_binary_TF, human_binary_03_TF)
+CVD_groups <- colnames(human_binary)[2:9]
+
+# Upset plot
+library(ComplexUpset)
+upset(
+  human_binary_double_TF,
+  CVD_groups,
+  base_annotations = list(
+    'Number of Proteins Appearing \n in Disease Group Intersection' = intersection_size(
+      counts = FALSE,
+      mapping = aes(fill = Threshold)
+    ) + scale_fill_manual(values=c(
+            '0'='#E41A1C', '0.03'='#377EB8'))
+  ),
+  width_ratio = 0.15,
+  n_intersections = 40,
+  max_size = 12000,
+  set_sizes=(
+        upset_set_size(geom=geom_bar(
+                aes(x=group),
+                width=0.8),
+                position = 'right')
+        + theme(axis.text.x=element_text(angle=90))
+        + ylab('Disease Group\n Set Size')),
+   guides='over',
+  name=''
+)
+```
